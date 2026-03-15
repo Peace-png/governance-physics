@@ -1,3 +1,7 @@
+<p align="center">
+  <img src="header_image.png" alt="Governance Physics" width="100%">
+</p>
+
 # Governance Physics: Phase Transitions and Cascade Dynamics in Kubernetes Clusters
 
 > A spiking neural network simulation investigating whether organizational structures follow universal scaling laws similar to phase transitions in statistical physics.
