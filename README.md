@@ -165,13 +165,9 @@ python governance_physics_snn.py
 
 ---
 
-## Contributors
+## Author
 
-| Contributor | Role |
-|-------------|------|
-| **Peace** | Research direction, empirical validation probe, methodology, analysis |
-
-*Simulation assistance by Claude (Atlas)*
+**Peace** — Research direction, empirical validation, methodology, analysis
 
 ---
 
