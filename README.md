@@ -6,6 +6,35 @@
 
 > A spiking neural network simulation investigating whether organizational structures follow universal scaling laws similar to phase transitions in statistical physics.
 
+## The Story
+
+This project started as an investigation into "Governance Physics" — a theoretical claim that organizational collapse follows universal laws across domains (Kubernetes clusters, Federal Reserve policy, corporate hierarchies). After empirical probes, we found:
+
+- **Federal Reserve**: Policy transmission lags are 12-18 *months*, not milliseconds — the neural network model is fundamentally wrong for this domain.
+- **Corporate**: Coordination costs scale as O(n^1.5) to O(n²), not √N — the scaling law fails.
+
+**Kubernetes was the only domain where millisecond timescales made sense.** This repo narrows focus to where the model might actually work: control loops, etcd consensus, pod scheduling — the physics of cluster governance.
+
+## The Story
+
+This project started as an ambitious test of "Governance Physics" — the idea that all hierarchical systems (Kubernetes clusters, central banks, corporations) might follow universal scaling laws.
+
+**The probe killed the universality claim.**
+
+Real data showed the Federal Reserve's policy transmission operates on 12-18 month timescales, not milliseconds. Corporate coordination costs scale as O(n²), not √N. Only Kubernetes — with its 10-100ms control loops — matched the model's dynamics.
+
+So this repo focuses where the physics actually works: **K8s failure cascades**. Here's what the model predicts, and here's how to prove it wrong.
+
+---
+
+## Why a K8s SRE Might Care
+
+1. **Predicting cascade risk** — The model identifies parameter regimes where small failures amplify into cluster-wide outages. If your cluster operates near λ_critical, you're living dangerously.
+
+2. **Tuning controller loops** — The simulation shows how control rate (λ) and propagation delay (τ) affect stability. Faster isn't always better — there's a tradeoff.
+
+3. **Understanding power-law risk** — If failure cascades follow power-law distributions (α ≈ 1.5-2.0), then "black swan" outages are mathematically expected, not flukes. Plan accordingly.
+
 ## Abstract
 
 We model Kubernetes cluster governance as a hierarchical spiking neural network to test three predictions from "Governance Physics" theory:
@@ -91,6 +120,12 @@ The predicted scaling relationship between control rate and system size does not
 
 This simulation makes testable predictions. Real empirical data would falsify the model if:
 
+### Concrete Falsification Test
+
+**If Google Borg traces or production K8s logs show cascade exponent α ≈ 1.2, but this model consistently produces α ≈ 1.9 → the model is wrong.**
+
+The cascade exponent is measurable from real failure logs. Our simulation produces α ≈ 1.88. If reality differs significantly, the model doesn't capture real dynamics.
+
 | Prediction | Falsified If |
 |------------|--------------|
 | Cascade power-law | Real K8s cascades don't follow power-law distribution |
@@ -161,6 +196,10 @@ python governance_physics_snn.py
 ---
 
 ## Limitations
+
+1. **Cross-domain claims were dropped** — Earlier versions attempted to model Federal Reserve monetary policy and corporate hierarchies. These were abandoned after empirical probes showed order-of-magnitude timescale mismatches (months vs milliseconds) and incorrect scaling exponents.
+
+2. **No empirical validation** — Parameters are estimated from literature, not fitted from real K8s failure data.
 
 1. **No empirical validation** — Parameters are estimated, not fitted from real data
 2. **Simplified topology** — Real K8s networks have more complex dependency structures
