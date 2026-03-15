@@ -200,6 +200,28 @@ All organizational design is sophisticated coping with cognitive constraints. Ou
 
 ---
 
+## Visualizations
+
+### Research Lab Architecture
+
+![Research Stack](results/research_stack_diagram.png)
+
+The 10-agent research stack mapped to brain regions. Green = Excitatory (generate ideas), Red = Inhibitory (constrain).
+
+### Scaling Law Validation
+
+![Scaling Validation](results/02_scaling_validation.png)
+
+Confidence levels for core claims: Dunbar (HIGH), λ∝√N (MEDIUM), G constant (LOW).
+
+### Organizational Examples
+
+![Organizational Examples](results/03_organizational_examples.png)
+
+Real-world organizations validating (W.L. Gore, Amazon, Spotify) or violating (traditional hierarchies) the scaling heuristics.
+
+---
+
 ## Sources
 
 ### Scaling Theory
