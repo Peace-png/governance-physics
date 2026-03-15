@@ -120,11 +120,21 @@ The predicted scaling relationship between control rate and system size does not
 
 This simulation makes testable predictions. Real empirical data would falsify the model if:
 
+### The Open Question
+
+**Do real cluster failures follow a power-law distribution with α ≈ 1.5-2.0?**
+
+Our simulation produces α ≈ 1.88. But we don't know if real K8s failures match this. To validate, someone needs to:
+1. Get cascade size data from production clusters (Borg traces, Azure logs, post-mortems)
+2. Fit a power-law distribution
+3. Compare α_real vs α_simulated
+
+If they're close → model captures real dynamics.
+If they're far apart → model is wrong.
+
 ### Concrete Falsification Test
 
-**If Google Borg traces or production K8s logs show cascade exponent α ≈ 1.2, but this model consistently produces α ≈ 1.9 → the model is wrong.**
-
-The cascade exponent is measurable from real failure logs. Our simulation produces α ≈ 1.88. If reality differs significantly, the model doesn't capture real dynamics.
+**If Google Borg traces show cascade exponent α ≈ 1.2, but this model produces α ≈ 1.9 → the model is wrong.**
 
 | Prediction | Falsified If |
 |------------|--------------|
