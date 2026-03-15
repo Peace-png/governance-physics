@@ -169,8 +169,9 @@ python governance_physics_snn.py
 
 | Contributor | Role |
 |-------------|------|
-| **Peace** | Research direction, empirical validation probe, "don't hold back" methodology |
-| **Claude (Atlas)** | Simulation implementation, research synthesis, literature review |
+| **Peace** | Research direction, empirical validation probe, methodology, analysis |
+
+*Simulation assistance by Claude (Atlas)*
 
 ---
 
@@ -185,7 +186,7 @@ MIT
 ```bibtex
 @misc{governance_physics_2026,
   title={Governance Physics: Phase Transitions and Cascade Dynamics in Kubernetes Clusters},
-  author={Peace and Claude (Atlas)},
+  author={Peace},
   year={2026},
   url={https://github.com/Peace-png/governance-physics}
 }
