@@ -8,15 +8,6 @@
 
 ## The Story
 
-This project started as an investigation into "Governance Physics" — a theoretical claim that organizational collapse follows universal laws across domains (Kubernetes clusters, Federal Reserve policy, corporate hierarchies). After empirical probes, we found:
-
-- **Federal Reserve**: Policy transmission lags are 12-18 *months*, not milliseconds — the neural network model is fundamentally wrong for this domain.
-- **Corporate**: Coordination costs scale as O(n^1.5) to O(n²), not √N — the scaling law fails.
-
-**Kubernetes was the only domain where millisecond timescales made sense.** This repo narrows focus to where the model might actually work: control loops, etcd consensus, pod scheduling — the physics of cluster governance.
-
-## The Story
-
 This project started as an ambitious test of "Governance Physics" — the idea that all hierarchical systems (Kubernetes clusters, central banks, corporations) might follow universal scaling laws.
 
 **The probe killed the universality claim.**
@@ -27,6 +18,36 @@ So this repo focuses where the physics actually works: **K8s failure cascades**.
 
 ---
 
+## The 1987 Connection: Bak-Tang-Wiesenfeld Sandpile
+
+<p align="center">
+  <img src="btw_sandpile_comparison.png" alt="BTW Sandpile Comparison" width="100%">
+</p>
+
+Our simulation's avalanche exponent (α ≈ 1.88) is suspiciously close to the **Bak-Tang-Wiesenfeld sandpile model** from 1987 — the foundational paper on **self-organized criticality (SOC)**.
+
+**The BTW model:**
+- Drop sand grains on a 2D lattice
+- When height ≥ 4, site topples → distributes to neighbors
+- Cascades (avalanches) follow power-law with α ≈ 1.5
+
+**Why this matters for K8s:**
+
+| Sandpile Concept | Kubernetes Analog |
+|------------------|-------------------|
+| Sand grain | Request / load increment |
+| Site height | Pod resource usage |
+| Toppling threshold | OOM limit / CPU throttle |
+| Avalanche | Cascade failure |
+| Boundary dissipation | Circuit breaker / node isolation |
+
+**If K8s exhibits SOC, then:**
+- Large outages are **mathematically expected**, not bugs
+- You cannot prevent all cascades
+- You **can** shift the exponent lower with isolation mechanisms
+
+---
+
 ## Why a K8s SRE Might Care
 
 1. **Predicting cascade risk** — The model identifies parameter regimes where small failures amplify into cluster-wide outages. If your cluster operates near λ_critical, you're living dangerously.
@@ -34,6 +55,8 @@ So this repo focuses where the physics actually works: **K8s failure cascades**.
 2. **Tuning controller loops** — The simulation shows how control rate (λ) and propagation delay (τ) affect stability. Faster isn't always better — there's a tradeoff.
 
 3. **Understanding power-law risk** — If failure cascades follow power-law distributions (α ≈ 1.5-2.0), then "black swan" outages are mathematically expected, not flukes. Plan accordingly.
+
+---
 
 ## Abstract
 
@@ -158,7 +181,7 @@ If they're far apart → model is wrong.
 | [`governance_physics_snn.py`](governance_physics_snn.py) | Multi-domain simulation (K8s, Fed, Corp) |
 | [`docs/GOVERNANCE_PHYSICS_RESEARCH_REPORT.md`](docs/GOVERNANCE_PHYSICS_RESEARCH_REPORT.md) | Full research report with literature review |
 | [`governance_physics_k8s_results.png`](governance_physics_k8s_results.png) | K8s visualization output |
-| [`governance_physics_snn_results.png`](governance_physics_snn_results.png) | Multi-domain visualization |
+| [`btw_sandpile_comparison.png`](btw_sandpile_comparison.png) | BTW sandpile model comparison |
 
 ---
 
@@ -184,19 +207,17 @@ python governance_physics_snn.py
 
 ## Sources & Citations
 
+### Self-Organized Criticality (The 1987 Connection)
+- Bak, P., Tang, C., & Wiesenfeld, K. (1987). "Self-organized criticality: An explanation of the 1/f noise." *Physical Review Letters*, 59(4), 381-384.
+- Dhar, D. (1990). "Self-organized critical state of sandpile automaton models." *Physical Review Letters*, 64(14), 1613-1616.
+
+### Infrastructure Cascades
+- Carreras, B.A. et al. (2004). "Evidence for self-organized criticality in electric power system blackouts." *Chaos*, 14(2), 393-403.
+- Watts, D.J. (2002). "A simple model of global cascades on random networks." *PNAS*, 99(9), 5766-5771.
+
 ### Theoretical Foundations
 - Prigogine, I. (1977). Nobel Lecture: Time, Structure and Fluctuations
 - Nicolis, G. & Prigogine, I. (1977). Self-Organization in Non-Equilibrium Systems
-
-### Monetary Policy Transmission (Federal Reserve Domain)
-- Christiano, L.J., Eichenbaum, M. & Evans, C.L. (1999). "Monetary Policy Shocks: What Have We Learned and to What End?" Handbook of Macroeconomics
-- Romer, C.D. & Romer, D.H. (2004). "A New Measure of Monetary Shocks." AER
-- Gertler, M. & Karadi, P. (2015). "Monetary Policy Surprises, Credit Costs, and Economic Activity." AER
-
-### Cascade Failures in Networks
-- arXiv:2204.08407 — "Non-Markovian random walks characterize network robustness"
-- arXiv:2112.11308 — "Cascading failures in isotropic and anisotropic spatial networks"
-- arXiv:2010.01373 — "Abrupt transition due to non-local cascade propagation"
 
 ### Kubernetes Empirical Data
 - Google Cluster Data (Borg traces): github.com/google/cluster-data
@@ -211,10 +232,9 @@ python governance_physics_snn.py
 
 2. **No empirical validation** — Parameters are estimated from literature, not fitted from real K8s failure data.
 
-1. **No empirical validation** — Parameters are estimated, not fitted from real data
-2. **Simplified topology** — Real K8s networks have more complex dependency structures
-3. **Single domain tested** — Only K8s has plausible timescales for this model
-4. **No temporal evolution** — Model doesn't capture learning/adaptation
+3. **Simplified topology** — Real K8s networks have more complex dependency structures.
+
+4. **Single domain tested** — Only K8s has plausible timescales for this model.
 
 ---
 
