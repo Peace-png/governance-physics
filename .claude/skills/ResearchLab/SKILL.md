@@ -3,9 +3,9 @@ name: ResearchLab
 description: Multi-agent research lab. Takes questions → spawns 10 specialist agents → outputs paper-ready reports. USE WHEN research, investigate, study|analyze|explore deep.
 ---
 
-# Andrew Hagan Research Lab
-**Author**: Andrew Hagan
-**License**: MIT © Andrew Hagan 2026
+# Peace-png Research Lab
+**Author**: Peace-png
+**License**: CC BY 4.0 © Peace-png 2026
 
 ---
 
@@ -51,6 +51,12 @@ Spawns real specialist agents in parallel.
 ║                                                               ║
 ║  WAVE 6: Publication                                          ║
 ║  [ ] Publisher (ClaudeResearcher) → README.md + PAPER.md      ║
+║                                                               ║
+║  QUALITY GATES (MANDATORY)                                    ║
+║  [ ] Gate 1: Empirical grounding - data shown for claims      ║
+║  [ ] Gate 2: Post-hoc flexibility - counter-examples counted  ║
+║  [ ] Gate 3: Endogeneity - causal claims match evidence       ║
+║  [ ] Gate 4: Citations verified - no hallucinated refs        ║
 ║                                                               ║
 ║  FINAL: Git                                                   ║
 ║  [ ] Commit all outputs                                       ║
@@ -221,6 +227,50 @@ domain_groups = NeuronGroup(N_events, master_eqs, ...)
 2. Validated parameters file (`PARAMETER_VALIDATION_RESULTS.md`)
 3. Literature citations (PMID sources)
 4. Agent consensus (lowest)
+
+**CRITICAL: Oscillator simulations prove mathematical consistency, NOT empirical validity.**
+- Parameters are hand-tuned to produce desired behavior
+- No fitting to actual data required
+- Must label results as "HYPOTHESIS" not "CONFIRMED" unless:
+  - Parameters fit to N > 100 observations
+  - Cross-validated on holdout set
+  - Beats simple baselines
+  - Out-of-sample performance reported
+
+---
+
+## Quality Gates (MANDATORY)
+
+**Before ANY report is published, these checks MUST PASS:**
+
+### Gate 1: Empirical Grounding
+For every threshold/percentage claim, MUST show:
+- **Dataset**: N, countries, years, sources
+- **Base rates**: How often outcome occurs WITHOUT trigger
+- **False positives/negatives**: Raw counts
+- **Statistical test**: Coefficient, p-value, CI
+
+**If missing → Label as "HYPOTHESIS" not "CONFIRMED"**
+
+### Gate 2: Post-Hoc Flexibility Check
+For counter-examples explained away:
+- **Count**: How many counter-examples vs supporting cases?
+- **Falsifiability**: Is ANY outcome that would prove threshold wrong?
+- **If unfalsifiable → Mark "UNTESTABLE"**
+
+### Gate 3: Endogeneity Acknowledgment
+If causal direction unresolved:
+- Cannot claim "X predicts Y" as causality
+- Must frame as "X precedes Y" or "X correlates with Y"
+- Label lead times as "association" not "prediction"
+
+### Gate 4: Citation Verification
+All citations must be:
+- **Verifiable**: DOI/PMID/URL that resolves
+- **Accurate**: Actually supports the claim
+- **Not fabricated**: NO hallucinated papers
+
+**If unverifiable → Remove or mark "UNVERIFIED"**
 
 ---
 
@@ -657,25 +707,39 @@ research-project/
 
 ---
 
+## Git Configuration (MANDATORY for Push)
+
+**Before pushing to GitHub, ALWAYS configure git with correct identity:**
+
+```bash
+git config user.name "Peace-png"
+git config user.email "peaceful0369@gmail.com"
+```
+
+This ensures commits are attributed to Peace-png on GitHub. Do NOT use:
+- `peace@users.noreply.github.com` (links to wrong account)
+- Any other email (will show wrong contributor)
+
+---
+
 ## License
 
 All Research Lab outputs are licensed under:
 
-**MIT License © Andrew Hagan 2026**
+**Creative Commons Attribution 4.0 International (CC BY 4.0)**
 
-```
-Permission is hereby granted, free of charge, to any person obtaining a copy
-of this software and associated documentation files, to deal in the Software
-without restriction, including without limitation the rights to use, copy,
-modify, merge, publish, distribute, sublicense, and/or sell copies.
+Copyright 2026 Peace-png
 
-THE ABOVE COPYRIGHT NOTICE AND THIS PERMISSION NOTICE SHALL BE INCLUDED IN ALL
-COPIES OR SUBSTANTIAL PORTIONS OF THE SOFTWARE.
-```
+You are free to:
+- **Share** — copy and redistribute the material in any medium or format
+- **Adapt** — remix, transform, and build upon the material for any purpose
+
+Under the following terms:
+- **Attribution** — You must give appropriate credit to Peace-png
 
 **Citation format:**
 ```
-Hagan, Andrew. (2026). [Research Title].
+Peace-png. (2026). [Research Title].
 Retrieved from https://github.com/Peace-png/[repo-name]
 ```
 
