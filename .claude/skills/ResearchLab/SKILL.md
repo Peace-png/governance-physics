@@ -1,6 +1,6 @@
 ---
 name: ResearchLab
-description: Multi-agent research lab. Takes questions → spawns 15 specialist agents → outputs paper-ready reports. Includes DataScientist for empirical grounding. USE WHEN research, investigate, study|analyze|explore deep.
+description: Multi-agent research lab. Takes questions → spawns 16 specialist agents → outputs paper-ready reports + Substack newsletter + TikTok funnel. Includes DataScientist for empirical grounding and SubstackPublisher for monetization. USE WHEN research, investigate, study|analyze|explore deep.
 ---
 
 # Peace-png Research Lab
@@ -60,6 +60,8 @@ Spawns real specialist agents in parallel.
 ║                                                               ║
 ║  WAVE 6: Publication                                          ║
 ║  [ ] Publisher (ClaudeResearcher) → README.md + PAPER.md      ║
+║  [ ] SubstackPublisher (CodexResearcher) → NEWSLETTER.md      ║
+║    + TikTok script + Twitter thread + optimization data       ║
 ║                                                               ║
 ║  QUALITY GATES (MANDATORY)                                    ║
 ║  [ ] Gate 1: Empirical grounding - data shown for claims      ║
@@ -118,6 +120,7 @@ This skill wires 15 logical roles to your actual PAI researchers, mapped to brai
 | **Archivist** | Direct file write | Hippocampus | Memory consolidation |
 | **Synthesiser** | `PerplexityResearcher` | DMN | Cross-cycle integration |
 | **Publisher** | `ClaudeResearcher` | Broca's area | Academic formatting |
+| **SubstackPublisher** | `CodexResearcher` | Broca's + Nucleus Accumbens | Newsletter optimization + TikTok funnel |
 | **Ground Truth** | `ClaudeResearcher` | Cerebellum | Validate against known data |
 | **Simulator** | `CodexResearcher` | Basal Ganglia | Brian2 validation, rhythm extraction |
 
@@ -149,6 +152,29 @@ The Publisher runs AFTER all research agents complete. It is a **formatter, not 
 - `README.md` - Blog format (current style)
 - `PAPER.md` - Academic format (IMRaD structure)
 - `CITATION.bib` - BibTeX references
+
+### SubstackPublisher Agent (NEW - Elite)
+
+The SubstackPublisher runs AFTER the Publisher. It is a **newsletter strategist**, not just a formatter:
+
+| Capability | Description |
+|------------|-------------|
+| Substack algorithm optimization | Structure for recommendations, leaderboard |
+| Subject line A/B testing | Generate 5 options with predicted open rates |
+| Preview text optimization | First 90 chars that appear in inbox |
+| Paywall psychology | Calculate optimal free/paid split |
+| TikTok funnel derivation | Convert newsletter to 60s TikTok script |
+| Twitter thread extraction | 8-10 tweet thread from newsletter |
+| Engagement engineering | Comment prompts, share CTAs, upgrade hooks |
+
+**SubstackPublisher outputs:**
+- `NEWSLETTER.md` - Substack-ready format
+- `NEWSLETTER_METADATA.json` - Optimization data (subject lines, publish time, paywall position)
+- `TIKTOK_SCRIPT.md` - 60-second teaser for cross-platform funnel
+
+**Philosophy:** "Every email is a privilege, not a right. Earn the inbox."
+
+**See full specification:** `specs/SUBSTACK_PUBLISHER_SPECIFICATION.md`
 
 ### Ground Truth Agent (Optional - Neuroscience Mode)
 
