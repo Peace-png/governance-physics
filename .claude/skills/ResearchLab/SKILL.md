@@ -1,6 +1,6 @@
 ---
 name: ResearchLab
-description: Multi-agent research lab. Takes questions → spawns 10 specialist agents → outputs paper-ready reports. USE WHEN research, investigate, study|analyze|explore deep.
+description: Multi-agent research lab. Takes questions → spawns 15 specialist agents → outputs paper-ready reports. Includes DataScientist for empirical grounding. USE WHEN research, investigate, study|analyze|explore deep.
 ---
 
 # Peace-png Research Lab
@@ -32,6 +32,13 @@ Spawns real specialist agents in parallel.
 ║  [ ] Skeptic (GrokResearcher)                                 ║
 ║  [ ] Historian (Research skill)                               ║
 ║                                                               ║
+║  WAVE 1.5: Empirical Grounding                                ║
+║  [ ] DataScientist (CodexResearcher) [skip if --no-data]      ║
+║    - Pull datasets from World Bank, FRED, OWID                ║
+║    - Run regression analysis                                  ║
+║    - Output: coefficients, CIs, base rates                    ║
+║    - Save: results/empirical_results.json                     ║
+║                                                               ║
 ║  WAVE 2: Interpretation                                       ║
 ║  [ ] Experimenter (CodexResearcher)                           ║
 ║  [ ] Philosopher (Thinking skill)                             ║
@@ -39,6 +46,8 @@ Spawns real specialist agents in parallel.
 ║                                                               ║
 ║  WAVE 2.5: Novel Hypotheses                                   ║
 ║  [ ] Ideologist (CodexResearcher)                             ║
+║    - Uses DataScientist results as grounding                  ║
+║    - Hypotheses must be consistent with empirical data        ║
 ║                                                               ║
 ║  WAVE 3: Validation                                           ║
 ║  [ ] Simulator/Brian2 (CodexResearcher)                       ║
@@ -57,6 +66,7 @@ Spawns real specialist agents in parallel.
 ║  [ ] Gate 2: Post-hoc flexibility - counter-examples counted  ║
 ║  [ ] Gate 3: Endogeneity - causal claims match evidence       ║
 ║  [ ] Gate 4: Citations verified - no hallucinated refs        ║
+║  [ ] Gate 5: DataScientist ran for quantitative claims        ║
 ║                                                               ║
 ║  FINAL: Git                                                   ║
 ║  [ ] Commit all outputs                                       ║
@@ -91,12 +101,13 @@ After each wave completes, mark `[x]` in checklist. If any wave fails:
 
 ## The Agent Stack
 
-This skill wires 14 logical roles to your actual PAI researchers, mapped to brain regions:
+This skill wires 15 logical roles to your actual PAI researchers, mapped to brain regions:
 
 | Role | Real Agent | Brain Region | Function |
 |------|------------|--------------|----------|
 | **Director** | Main session | Brainstem + Thalamus | Orchestrate, route signals |
 | **Scientist** | `ClaudeResearcher` | Prefrontal | Final authority, truth claims |
+| **DataScientist** | `CodexResearcher` | Parietal lobe | Statistical analysis, empirical grounding |
 | **Skeptic** | `GrokResearcher` | Amygdala | Threat detection, MAJOR_FLAW |
 | **Ideologist** | `CodexResearcher` | Right hemisphere | Novel hypothesis generation |
 | **Experimenter** | `CodexResearcher` | Motor cortex | Design tests, action |
@@ -151,6 +162,269 @@ When running neuroscience research with `--grounding neuroscience`, an additiona
 | Mechanism verification | ✅ | Known neurophysiology |
 
 **Ground Truth runs AFTER Scientist, BEFORE Skeptic** to provide factual constraints.
+
+### DataScientist Agent - Empirical Grounding Engine
+
+The DataScientist runs AFTER Scientist, BEFORE Ideologist. It **grounds hypotheses in real data**, transforming selective anecdotes into systematic evidence.
+
+#### Why This Agent Exists
+
+**The Problem:** Research Lab was generating hypotheses from cherry-picked historical examples. "Arab Spring had food inflation" → "Food inflation predicts unrest." This is selection bias, not evidence.
+
+**The Solution:** DataScientist pulls actual datasets, runs real statistics, outputs:
+- Sample sizes (N)
+- Effect sizes with confidence intervals
+- P-values (where appropriate)
+- Base rates
+- False positive/negative rates
+
+#### Capabilities
+
+| Capability | Method | Output |
+|------------|--------|--------|
+| **Data Retrieval** | World Bank API, FRED, OWID, IMF | Raw CSV/JSON datasets |
+| **Data Merging** | Country-year matching, ISO codes | Merged panel data |
+| **Missing Data Handling** | Listwise deletion, interpolation flags | Clean analysis dataset |
+| **Descriptive Stats** | Mean, median, SD, quartiles | Summary tables |
+| **Regression Analysis** | OLS, logistic, panel (FE/RE) | Coefficients, SEs, p-values |
+| **Time Series** | Lagged variables, Granger causality | Lead/lag relationships |
+| **Causal Inference** | IV, diff-in-diff (if natural experiments) | Causal estimates |
+| **Cross-Validation** | Train/test split, k-fold | Out-of-sample performance |
+| **Visualization Specs** | Plot specifications for Artist | Data-driven charts |
+
+#### Data Sources (Priority Order)
+
+1. **World Bank WDI** (api.worldbank.org)
+   - Inflation, GDP, unemployment, trade
+   - 217 countries, 1960-present
+   - API: `api.worldbank.org/v2/country/all/indicator/FP.CPI.TOTL.ZG`
+
+2. **FRED** (fred.stlouisfed.org)
+   - US economic indicators
+   - 816,000+ series
+   - API: `api.stlouisfed.org/fred/series/observations`
+
+3. **Our World in Data** (ourworldindata.org)
+   - Pre-processed, documented datasets
+   - Standardized country codes
+   - Direct CSV: `ourworldindata.org/grapher/data.csv`
+
+4. **IMF WEO/IFS**
+   - International macroeconomic data
+   - Quarterly + annual
+
+5. **V-Dem** (v-dem.net)
+   - Democracy indices, regime type
+   - 202 countries, 1789-present
+
+6. **ACLED** (acleddata.com)
+   - Protest/event data (requires API key)
+   - Geographic, temporal precision
+
+7. **POLITY V**
+   - Regime type, political stability
+   - Annual country-level
+
+#### Execution Protocol
+
+```
+DATASCIENTIST EXECUTION FLOW:
+┌─────────────────────────────────────────────────────────────┐
+│  INPUT: Research question + Scientist's initial findings    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 1: Identify Required Variables                        │
+│  - What data would test the core hypothesis?                │
+│  - What are the outcome variables? (unrest, regime change)  │
+│  - What are the predictor variables? (inflation, food)      │
+│  - What are the control variables? (GDP, unemployment)      │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 2: Identify Available Data Sources                    │
+│  - Check which datasets have required variables             │
+│  - Check temporal coverage (years available)                │
+│  - Check geographic coverage (countries available)          │
+│  - Document gaps and workarounds                            │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 3: Retrieve Data                                      │
+│  - Use web_fetch for CSV/JSON APIs                          │
+│  - Document exact API calls for reproducibility             │
+│  - Save raw data to results/raw_data/                       │
+│  - Log any access issues or missing data                    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 4: Merge & Clean                                      │
+│  - Match on ISO country codes + year                        │
+│  - Handle missing data (document method)                    │
+│  - Create analysis dataset                                  │
+│  - Save to results/analysis_dataset.csv                     │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 5: Descriptive Statistics                             │
+│  - N observations, N countries, year range                  │
+│  - Distribution of key variables (mean, SD, range)          │
+│  - Correlation matrix for main variables                    │
+│  - Base rates: P(outcome) overall, by predictor quintile    │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 6: Main Analysis                                      │
+│  - Regression: outcome ~ predictor + controls               │
+│  - Report: coefficient, SE, 95% CI, p-value                 │
+│  - Test alternative specifications (robustness)             │
+│  - If time series: test lead/lag relationships              │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  STEP 7: Validation                                         │
+│  - Cross-validation: train/test split                       │
+│  - Sensitivity: does result hold with different specs?      │
+│  - Counter-example check: how many cases contradict?        │
+│  - Out-of-sample: predict next year, check accuracy         │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  OUTPUT: empirical_results.json                             │
+│  {                                                          │
+│    "n_observations": 2453,                                  │
+│    "n_countries": 142,                                      │
+│    "year_range": [1990, 2023],                              │
+│    "main_result": {                                         │
+│      "coefficient": 0.034,                                  │
+│      "se": 0.012,                                           │
+│      "ci_95": [0.010, 0.058],                               │
+│      "p_value": 0.005,                                      │
+│      "interpretation": "1pp inflation increase → 3.4% higher unrest probability" │
+│    },                                                       │
+│    "base_rate": 0.12,                                       │
+│    "false_positives": 234,                                  │
+│    "false_negatives": 89,                                   │
+│    "out_of_sample_accuracy": 0.67,                          │
+│    "counter_examples": ["Turkey 2022", "Argentina 2019"],   │
+│    "data_sources": ["World Bank WDI", "ACLED"],             │
+│    "limitations": ["Endogeneity unresolved", "Missing data for 23 countries"] │
+│  }                                                          │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Output Interpretation Standards
+
+| Statistical Result | Label | Confidence |
+|--------------------|-------|------------|
+| p < 0.01, CI excludes 0, replicated OOS | **SUPPORTED** | HIGH |
+| p < 0.05, CI excludes 0 | **TENTATIVE** | MEDIUM |
+| p < 0.10 or CI includes 0 | **INCONCLUSIVE** | LOW |
+| p ≥ 0.10 or opposite sign | **REJECTED** | HIGH (negative) |
+| N < 100 or major data gaps | **INSUFFICIENT DATA** | N/A |
+
+#### When DataScientist Runs
+
+**ALWAYS** for quantitative research questions involving:
+- Thresholds, percentages, probabilities
+- "X predicts Y" claims
+- Comparative statements across countries/years
+- Time-based predictions (lead times)
+
+**OPTIONAL** (can skip with `--no-data`) for:
+- Philosophical analysis
+- Historical narrative
+- Conceptual frameworks
+- Qualitative research
+
+#### Example: Inflation Predicting Unrest
+
+```
+DATASCIENTIST OUTPUT:
+┌─────────────────────────────────────────────────────────────┐
+│  EMPIRICAL ANALYSIS: Inflation → Civil Unrest               │
+│                                                              │
+│  DATA:                                                       │
+│  - Source: World Bank WDI (inflation) + ACLED (protests)    │
+│  - N: 2,847 country-years                                   │
+│  - Countries: 142                                            │
+│  - Years: 1997-2023                                          │
+│                                                              │
+│  MAIN RESULT: Inflation → Protest Count (Poisson)           │
+│  - Coefficient: 0.018 (SE: 0.007)                           │
+│  - 95% CI: [0.004, 0.032]                                   │
+│  - p-value: 0.011                                            │
+│  - Interpretation: 10pp inflation → 18% more protests       │
+│                                                              │
+│  THRESHOLD ANALYSIS:                                         │
+│  - >15% inflation: 2.3x protest rate (p < 0.001)            │
+│  - >30% inflation: 3.1x protest rate (p < 0.001)            │
+│  - >50% inflation: 4.2x protest rate (p = 0.023)            │
+│  - Hyperinflation: N=12, too few for inference              │
+│                                                              │
+│  BASE RATES:                                                 │
+│  - Overall protest probability: 23%                          │
+│  - Given inflation <10%: 18%                                 │
+│  - Given inflation 10-30%: 29%                               │
+│  - Given inflation >30%: 47%                                 │
+│                                                              │
+│  FALSE POSITIVES: 312 (high inflation, no unrest)           │
+│  FALSE NEGATIVES: 89 (low inflation, unrest occurred)       │
+│                                                              │
+│  COUNTER-EXAMPLES (N=23):                                    │
+│  - Turkey 2018-2023: 80%+ inflation, stable regime          │
+│  - Argentina 2018-2023: 50%+ inflation, democracy persists  │
+│  - Angola 2016: 42% inflation, no major unrest              │
+│                                                              │
+│  OUT-OF-SAMPLE: 2022 predictions → 64% accuracy              │
+│                                                              │
+│  LIMITATIONS:                                                │
+│  - Endogeneity: unrest may cause inflation (capital flight) │
+│  - Missing: N Korea, Somalia, Syria (no data)               │
+│  - Protest definition varies by source                       │
+│                                                              │
+│  CONCLUSION: TENTATIVE SUPPORT for threshold effects,       │
+│  but high false positive rate (44%) limits predictive use.  │
+└─────────────────────────────────────────────────────────────┘
+```
+
+#### Integration with Other Agents
+
+**Scientist → DataScientist:**
+- Scientist provides: research question, initial hypotheses, relevant variables
+- DataScientist uses this to design data retrieval strategy
+
+**DataScientist → Ideologist:**
+- DataScientist provides: empirical results, effect sizes, counter-examples
+- Ideologist uses this to ground novel hypotheses in real patterns
+
+**DataScientist → Skeptic:**
+- DataScientist provides: base rates, false positives, limitations
+- Skeptic uses this to constrain overclaiming
+
+**DataScientist → Publisher:**
+- DataScientist provides: statistical notation, table specifications
+- Publisher formats according to journal style
+
+#### Quality Checklist
+
+Before DataScientist output is accepted:
+
+- [ ] Sample size (N) reported
+- [ ] Data sources documented with URLs/API calls
+- [ ] Base rates calculated
+- [ ] Confidence intervals (not just p-values)
+- [ ] Counter-examples listed
+- [ ] Limitations acknowledged
+- [ ] Raw data saved for reproducibility
 
 ### Ideologist Agent - Novel Hypothesis Generator
 
@@ -320,6 +594,16 @@ Loads validated parameters from `grounding/validated_parameters.md`:
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
+│  DATASCIENTIST (CodexResearcher) ← NEW WAVE 1.5             │
+│  - Pulls datasets from World Bank, FRED, OWID               │
+│  - Runs regression: outcome ~ predictor + controls          │
+│  - Outputs: coefficients, CIs, base rates, counter-examples │
+│  - Saves: results/empirical_results.json                    │
+│  - Grounds hypotheses in REAL data, not anecdotes           │
+└─────────────────────────────────────────────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
 │  DIRECTOR checks for MAJOR_FLAW from Skeptic                │
 │  - If found: HALT, report to user                           │
 │  - If clear: continue                                       │
@@ -337,6 +621,15 @@ Loads validated parameters from `grounding/validated_parameters.md`:
 └──────────────┘    └──────────────┘    └──────────────┘
         │                     │                     │
         └─────────────────────┼─────────────────────┘
+                              │
+                              ▼
+┌─────────────────────────────────────────────────────────────┐
+│  IDEOLOGIST (CodexResearcher) - NOW GROUNDED IN DATA        │
+│  - Uses DataScientist's empirical results                   │
+│  - Novel hypotheses must be consistent with data            │
+│  - If data contradicts hypothesis → reject or modify        │
+│  - Cross-domain mapping based on REAL patterns              │
+└─────────────────────────────────────────────────────────────┘
                               │
                               ▼
 ┌─────────────────────────────────────────────────────────────┐
@@ -407,12 +700,112 @@ results = parallel_execute(agents)
 if results["GrokResearcher"].major_flaw:
     HALT("Skeptic found breaking flaw")
 
-# Second wave
+# Wave 1.5: DataScientist (NEW - empirical grounding)
+if not args.no_data and is_quantitative_question(question):
+    Agent("CodexResearcher", prompt=f"""
+DATASCIENTIST role: Ground hypotheses in real data
+
+Research question: {question}
+Scientist's initial findings: {results["Scientist"].findings}
+
+Your task: Pull REAL datasets and run ACTUAL statistics.
+
+STEP 1 - Identify variables:
+- What outcome variables measure the phenomenon?
+- What predictor variables test the hypothesis?
+- What control variables are needed?
+
+STEP 2 - Find data sources:
+- World Bank WDI: api.worldbank.org (inflation, GDP, unemployment)
+- FRED: api.stlouisfed.org (US economic indicators)
+- Our World in Data: ourworldindata.org/grapher/data.csv
+- V-Dem: v-dem.net (democracy indices)
+- ACLED: acleddata.com (protest data)
+
+STEP 3 - Retrieve data:
+- Use web_fetch to get CSV/JSON from APIs
+- Save raw data to results/raw_data/
+- Document exact API calls for reproducibility
+
+STEP 4 - Merge & clean:
+- Match on ISO country codes + year
+- Handle missing data (document method)
+- Save to results/analysis_dataset.csv
+
+STEP 5 - Analysis:
+- Run regression: outcome ~ predictor + controls
+- Calculate: coefficient, SE, 95% CI, p-value
+- Report base rates and false positive/negative counts
+- List counter-examples explicitly
+
+STEP 6 - Output:
+Save to results/empirical_results.json:
+{{
+  "n_observations": <number>,
+  "n_countries": <number>,
+  "year_range": [<start>, <end>],
+  "main_result": {{
+    "coefficient": <value>,
+    "se": <value>,
+    "ci_95": [<lower>, <upper>],
+    "p_value": <value>,
+    "interpretation": "<plain language>"
+  }},
+  "base_rate": <value>,
+  "false_positives": <count>,
+  "false_negatives": <count>,
+  "counter_examples": ["<country year>", ...],
+  "data_sources": ["<source>", ...],
+  "limitations": ["<limitation>", ...]
+}}
+
+CRITICAL:
+- Use REAL data, not hypothetical numbers
+- Every statistic must be calculable from retrieved data
+- If data unavailable, report "INSUFFICIENT DATA" with explanation
+- Do NOT fabricate or estimate statistics
+""")
+
+# Second wave (after DataScientist)
 agents_wave_2 = [
     Agent("CodexResearcher", prompt=f"EXPERIMENTER role: Design tests for {question}"),
     Agent(subagent_type="Thinking", prompt=f"PHILOSOPHER role: Implications of {findings}"),
     Agent("GeminiResearcher", prompt=f"EXPLAINER role: Simplify {findings}")
 ]
+
+# Wave 2.5: Ideologist (NOW GROUNDED IN DATA)
+Agent("CodexResearcher", prompt=f"""
+IDEOLOGIST role: Generate novel hypotheses GROUNDED in empirical data
+
+Research question: {question}
+DataScientist's empirical results: {empirical_results}
+
+CRITICAL: Your hypotheses must be CONSISTENT with the data above.
+If the data shows no effect, do not hypothesize a strong effect.
+If the data shows counter-examples, your hypothesis must explain them.
+
+Generate 3-5 novel hypotheses by cross-domain mapping:
+1. Identify pattern in data (e.g., nonlinear threshold, habituation)
+2. Find analogous pattern in other domain (ecology, medicine, physics)
+3. Formulate testable prediction
+4. Specify falsification criteria
+
+For each hypothesis, provide:
+- Name: Descriptive title
+- Source Domain: Where the pattern comes from
+- Prediction: What should happen if hypothesis is true
+- Data Consistency: How this fits with DataScientist's results
+- Falsification: What evidence would prove it wrong
+
+OUTPUT FORMAT:
+```
+HYPOTHESIS N: [Name]
+- Map: [Domain pattern applied to this problem]
+- Prediction: [Testable claim]
+- Data Fit: [Consistent with empirical results because...]
+- Falsification: [Would be disproven if...]
+```
+""")
 
 # Third wave: SIMULATOR (Brian2 validation)
 Agent("CodexResearcher", prompt=f"""
@@ -421,6 +814,11 @@ SIMULATOR role: Validate claims via Brian2 oscillator dynamics
 Domain: {detected_domain}
 Claims to validate: {experimenter_claims}
 Hypotheses from Ideologist: {ideologist_hypotheses}
+Empirical constraints from DataScientist: {empirical_results}
+
+CRITICAL: Parameters must be CONSISTENT with empirical data.
+If DataScientist found coefficient = 0.034, your coupling strength
+should produce similar effect sizes, not arbitrary values.
 
 Map domain → oscillator network:
 - Neuroscience → Direct SNN (run 10s sim, check firing rates)
@@ -432,15 +830,13 @@ Map domain → oscillator network:
 
 For EACH Ideologist hypothesis:
 1. Map to Brian2 oscillator model
-2. Run 10s simulation
-3. Extract stability metrics (Lyapunov exponent, phase coherence)
-4. Report: STABLE / UNSTABLE / INCONCLUSIVE
+2. Set parameters consistent with empirical data
+3. Run 10s simulation
+4. Extract stability metrics (Lyapunov exponent, phase coherence)
+5. Report: STABLE / UNSTABLE / INCONCLUSIVE
 
-Source of truth hierarchy:
-1. Running Brian2 simulation (highest)
-2. PARAMETER_VALIDATION_RESULTS.md
-3. Literature citations
-4. Agent consensus (lowest)
+IMPORTANT: Label results as "MATHEMATICALLY CONSISTENT" not "CONFIRMED"
+unless parameters were fit to N > 100 observations with cross-validation.
 
 Output: simulation_results.json with stability metrics + hypothesis validation
 """)
@@ -461,6 +857,7 @@ Agent("ClaudeResearcher", prompt=f"""
 PUBLISHER role: Convert research to academic format
 
 Research findings: {all_results}
+Empirical results: {empirical_results}
 Target style: {style or 'apa'}
 Target journal: {journal or 'general'}
 
@@ -472,7 +869,8 @@ CRITICAL CONSTRAINTS:
 - You are a FORMATTER, not an AUTHOR
 - DO NOT claim novelty or judge merit
 - DO NOT fabricate citations
-- All statistics must come from the research
+- All statistics must come from DataScientist's empirical_results.json
+- If no empirical data, label claims as "HYPOTHESIS" not "CONFIRMED"
 - Use templates from specification
 - Human verification required before submission
 """)
@@ -655,7 +1053,9 @@ research "question" --mode kid --cycles 5 --no-images
 | `--mode kid` | Explainer uses simple analogies |
 | `--cycles N` | Run N cycles |
 | `--no-images` | Skip Media skill (faster) |
+| `--no-data` | Skip DataScientist wave (qualitative only) |
 | `--deep` | Use extensive research mode |
+| `--grounding neuroscience` | Load validated SNN parameters |
 
 ---
 
